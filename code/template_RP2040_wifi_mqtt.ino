@@ -42,7 +42,6 @@ volatile bool mqttOK = 0;
 WiFiClient mqttClient;
 PubSubClient client(mqttClient);
 const char* mqtt_server = "xx.xx.xx.xx";
-unsigned long lastMsg = 0;
 
 StaticJsonDocument<512> doc;
 
@@ -58,7 +57,6 @@ void setup()
   Serial.println("[BOOT] .............Starting............");
   pinMode(13,OUTPUT);
   digitalWrite(13, LOW);
-  // Setup the 3 pins as OUTPUT
   pinMode(ledR, OUTPUT);
   pinMode(ledG, OUTPUT);
   pinMode(ledB, OUTPUT);
@@ -79,7 +77,7 @@ void setup()
    
   th1.start(task_blinkLed13);
   th2.start(task_reconnectingWIFI);
-  th3.start(task_softwareReset);
+  //th3.start(task_softwareReset);
   tck1.attach(&flipp, 1.0);//Using Ticker
 }
 
@@ -87,8 +85,7 @@ void loop()
 {
     ThisThread::sleep_for(10000);//like delay(10000)
     publishState();
-    Watchdog::get_instance().kick();
-    
+    Watchdog::get_instance().kick();    
 }
 
 
@@ -108,7 +105,6 @@ void task_blinkLed13()
  Serial.println("[TASK] Starting Task blinkLed13");
  while (true) 
     {
-        Watchdog::get_instance().kick();
         digitalWrite(13, HIGH);
         ThisThread::sleep_for(500);  
         digitalWrite(13, LOW);
@@ -128,7 +124,6 @@ void task_reconnectingWIFI()
             wifiOK = 1;
             digitalWrite(ledG, HIGH);
             digitalWrite(ledR, LOW);
-            //return;
           }
         
           if (WiFi.status() != WL_CONNECTED)
@@ -226,7 +221,7 @@ void callback(char* topic, byte* payload, unsigned int length)
 void publishState()
 {
   char estat[256];
-  memset(estat,0,256);//esborra estat
+  memset(estat,0,256);//clear stat
   unsigned long upTime = millis()/1000;
   
   doc["uT"] = upTime;
